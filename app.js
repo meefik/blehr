@@ -4,7 +4,7 @@
 
 
 var noble = require('noble');
-var async = require('async');
+var fs = require('fs');
 
 var hrvDevices = [];
 
@@ -19,7 +19,8 @@ var limitHR = 10;
 
 noble.on('stateChange', function (state) {
     if (state === 'poweredOn') {
-        noble.startScanning([], true);
+        //noble.startScanning([], true);
+        noble.startScanning();
     } else {
         noble.stopScanning();
     }
@@ -28,6 +29,14 @@ noble.on('stateChange', function (state) {
 setInterval(function() { if (hrvDevices.length > 0) console.log(hrvDevices); }, 10000);
 
 discover();
+
+function dumpHR(uuid,hr) {
+    // write kig to file
+    var time = new Date().getTime();
+    fs.appendFile(uuid+'.csv', time+';'+hr+'\n', encoding='utf8', function (err) {
+        if (err) throw err;
+    });
+}
 
 function discover() {
 
@@ -76,6 +85,8 @@ function discover() {
                             if (dev.hr.length > limitHR) dev.hr.shift();
                             //console.log('heart rate: ' + hr + '\t interval: ' + interval);
                             //console.log(hrvDevices);
+
+                            dumpHR(dev.uuid,hr);
 
                         });
 
